@@ -54,7 +54,7 @@ async function getAllNodes(
 
     do {
         var notes = await joplin.data.get(["notes"], {
-            fields: ["id", "title", "body"],
+            fields: ["id", "title", "body", "parent_id"],
             order_by: "updated_time",
             order_dir: "DESC",
             limit: maxNotes < 100 ? maxNotes : 100,
@@ -91,6 +91,7 @@ function buildNodeFromNote(joplinNote: JoplinNote): Node {
         id: joplinNote.id,
         title: joplinNote.title,
         is_tag: false,
+        parent_id: joplinNote.parent_id,
         forwardlinks: links,
         backlinks: new Array<string>(),
         num_links: links.size,
@@ -289,6 +290,40 @@ export async function buildNodeGroupMap(groups: Map<string, ColorGroup>): Promis
     return nodeGroupMap
 }
 
+const NOTEBOOK_COLOURS = [
+    "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c",
+    "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"
+];
+
+export async function buildNotebookColourMap(nodes: Node[]): Promise<Map<string, string>> {
+    const notebookIds = new Set<string>();
+    for (const node of nodes) {
+        if (!node.is_tag && node.parent_id) {
+            notebookIds.add(node.parent_id);
+        }
+    }
+
+    const folderPromises = Array.from(notebookIds).map((id) =>
+        joplin.data.get(["folders", id], { fields: ["title"] })
+            .then((f: any) => ({ id, title: f.title }))
+            .catch(() => null)
+    );
+    const folders = (await Promise.all(folderPromises)).filter(Boolean) as { id: string; title: string }[];
+
+    const notebookColourMap = new Map<string, string>();
+    folders.forEach((folder, i) => {
+        notebookColourMap.set(folder.id, NOTEBOOK_COLOURS[i % NOTEBOOK_COLOURS.length]);
+    });
+
+    const nodeColourMap = new Map<string, string>();
+    for (const node of nodes) {
+        if (node.parent_id && notebookColourMap.has(node.parent_id)) {
+            nodeColourMap.set(node.id, notebookColourMap.get(node.parent_id));
+        }
+    }
+    return nodeColourMap;
+}
+
 export async function executeSearch(query: string): Promise<Array<JoplinNote>> {
     let page = 1;
     const maxNotes = await joplin.settings.value("MAX_NODES")
@@ -313,7 +348,7 @@ export async function executeSearch(query: string): Promise<Array<JoplinNote>> {
 async function getNoteArray(ids: string[]): Promise<Array<JoplinNote>> {
     var promises = ids.map((id) =>
         joplin.data.get(["notes", id], {
-            fields: ["id", "title", "body"],
+            fields: ["id", "title", "body", "parent_id"],
         })
     );
 

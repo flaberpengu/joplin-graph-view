@@ -56,7 +56,7 @@ async function collectGraphSettings() {
     return await joplin.settings.values([
         'FILTER', 'MAX_TREE_DEPTH', 'QUERY', 'SHOW_TAGS', 'INCLUDE_BACKLINKS', 'GROUPS',
         'ALPHA', 'CENTER_STRENGTH', 'CHARGE_STRENGTH', 'COLLIDE_RADIUS', 'LINK_DISTANCE',
-        'MAX_TEXT_WIDTH'
+        'MAX_TEXT_WIDTH', 'COLOUR_BY_NOTEBOOK'
     ]);
 }
 
@@ -112,6 +112,7 @@ async function fetchData(spec: DataSpec) {
             num_links: node.num_links,
             num_forwardlinks: node.num_forwardlinks,
             num_backlinks: node.num_backlinks,
+            parent_id: node.parent_id,
             distanceToCurrentNode: node.distanceToCurrentNode
         });
 
@@ -303,10 +304,17 @@ async function updateUI(eventName: string) {
         prevSettings = Object.assign({}, graphSettings);
     }
 
-    for (let node of data.nodes) {
-        node.color = '';
-        for (let [_, nodeMap] of nodeGroupMap.entries())
-            if (nodeMap.has(node.id)) node.color = nodeMap.get(node.id);
+    if (graphSettings.COLOUR_BY_NOTEBOOK) {
+        const notebookColours = await joplinData.buildNotebookColourMap(data.nodes);
+        for (let node of data.nodes) {
+            node.color = notebookColours.get(node.id) || '';
+        }
+    } else {
+        for (let node of data.nodes) {
+            node.color = '';
+            for (let [_, nodeMap] of nodeGroupMap.entries())
+                if (nodeMap.has(node.id)) node.color = nodeMap.get(node.id);
+        }
     }
 
     modelChanges.push({ name: eventName, data: data, resp: resp});

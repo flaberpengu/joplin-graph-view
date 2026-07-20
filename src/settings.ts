@@ -121,6 +121,15 @@ export async function registerSettings() {
       description:
         "",
     },
+    COLOUR_BY_NOTEBOOK: {
+      value: false,
+      type: SettingItemType.Bool,
+      section: sectionName,
+      public: true,
+      label: "Colour nodes by notebook",
+      description:
+        "When enabled, nodes are coloured automatically by the notebook they belong to, instead of by query-based groups.",
+    },
     ALPHA: {
       advanced: true,
       value: 30,

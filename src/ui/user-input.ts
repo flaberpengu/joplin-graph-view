@@ -17,6 +17,7 @@ const showTagsSwitch = document.getElementById("show-tags-switch") as HTMLInputE
 const includeBacklinksSwitch = document.getElementById("include-backlinks-switch") as HTMLInputElement;
 const maxDistInput = document.getElementById("distance-slider") as HTMLInputElement;
 const temperatureInput = document.getElementById("temperature-slider") as HTMLInputElement;
+const colourByNotebookSwitch = document.getElementById("colour-by-notebook-switch") as HTMLInputElement;
 
 const scale = [
     "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c",
@@ -90,6 +91,7 @@ export function setupGraphHandle(settings) {
     collideRadiusInput.value = settings.COLLIDE_RADIUS;
     linkDistanceInput.value = settings.LINK_DISTANCE;
     temperatureInput.value = settings.ALPHA;
+    colourByNotebookSwitch.checked = settings.COLOUR_BY_NOTEBOOK;
 
 }
 
@@ -269,6 +271,10 @@ export function initFront(initialValues, setSetting) {
 
         addGroupEventListeners(setSetting);
         setSetting("GROUPS", makeGroupValues());
+    });
+
+    colourByNotebookSwitch.addEventListener("change", () => {
+        setSetting("COLOUR_BY_NOTEBOOK", colourByNotebookSwitch.checked);
     });
 
     addGroupEventListeners(setSetting);

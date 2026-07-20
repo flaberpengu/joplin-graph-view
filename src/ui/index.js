@@ -83,8 +83,8 @@ function createGraph() {
 
     function dragended(event) {
         if (!event.active) simulation.alphaTarget(0);
-        event.subject.fx = null;
-        event.subject.fy = null;
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
     };
 
     function drawNode(node) {
@@ -132,11 +132,11 @@ function createGraph() {
 
     function drawLink(link) {
         context.beginPath();        
-        context.globalAlpha = 0.1;
-        context.strokeStyle = "#999";
+        context.globalAlpha = 0.3;
+        context.strokeStyle = "#aaa";
 
         if (link.focused) {
-            context.globalAlpha = 0.8;
+            context.globalAlpha = 0.9;
         }
 
         if (link.faded) {

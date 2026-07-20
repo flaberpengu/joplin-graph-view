@@ -7,14 +7,12 @@ export interface JoplinNote {
     id: string;
     title: string;
     body: string;
+    parent_id?: string;
 }
 
 export interface Edge {
   source: string;
   target: string;
-  // sourceDistanceToCurrentNode?: number;
-  // targetDistanceToCurrentNode?: number;
-  // focused: boolean;
 }
 
 export interface Node {
@@ -29,6 +27,7 @@ export interface Node {
     num_links: number;
     num_forwardlinks: number;
     num_backlinks: number;
+    parent_id?: string;
     /**
    * (Minimal) distance of this note to current/selected note in Joplin
    * 0 => current note itself
