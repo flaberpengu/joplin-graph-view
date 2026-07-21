@@ -119,8 +119,10 @@ function createGraph() {
 
     function dragended(event) {
         if (!event.active) simulation.alphaTarget(0);
-        event.subject.fx = event.subject.x;
-        event.subject.fy = event.subject.y;
+        event.subject._anchorX = event.subject.x;
+        event.subject._anchorY = event.subject.y;
+        event.subject.fx = null;
+        event.subject.fy = null;
         saveNodePositions();
     };
 
@@ -301,10 +303,12 @@ function createGraph() {
     };
 
     function initSimulation() {
+        const linkDistance = graphSettings.LINK_DISTANCE || 0;
         return d3.forceSimulation(graphNodes)
             .force("link", d3.forceLink(graphLinks)
                 .id(d => d.id)
-                .distance(graphSettings.LINK_DISTANCE)
+                .distance(linkDistance || 0)
+                .strength(linkDistance > 0 ? Math.min(1, linkDistance / 200) : 0)
             )
             .force("posX", d3.forceX(width / 2)
                 .strength(graphSettings.CENTER_STRENGTH / 100)
@@ -316,8 +320,29 @@ function createGraph() {
                 .strength(graphSettings.CHARGE_STRENGTH)
             )
             .force("nocollide", d3.forceCollide(graphSettings.COLLIDE_RADIUS))
+            .force("anchor", function(alpha) {
+                for (const node of graphNodes) {
+                    if (node._anchorX != null) {
+                        node.vx += (node._anchorX - node.x) * alpha * 0.08;
+                        node.vy += (node._anchorY - node.y) * alpha * 0.08;
+                    }
+                }
+            })
             .alpha(graphSettings.ALPHA / 100)
-            .on("tick", throttledDraw);
+            .on("tick", function() {
+                throttledDraw();
+                const threshold = graphSettings.COLLIDE_RADIUS * 0.5;
+                for (const node of graphNodes) {
+                    if (node._anchorX != null) {
+                        const dx = node.x - node._anchorX;
+                        const dy = node.y - node._anchorY;
+                        if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
+                            node._anchorX += dx * 0.05;
+                            node._anchorY += dy * 0.05;
+                        }
+                    }
+                }
+            });
     };
 
     function navigateTo(event) {
@@ -496,7 +521,12 @@ function createGraph() {
                 oldGraphSettings.ALPHA !== gs.ALPHA;
 
             if (forceChanged) {
-                simulation.force("link").distance(gs.LINK_DISTANCE);
+                const linkDistance = gs.LINK_DISTANCE || 0;
+                simulation.force("link", d3.forceLink(graphLinks)
+                    .id(d => d.id)
+                    .distance(linkDistance || 0)
+                    .strength(linkDistance > 0 ? Math.min(1, linkDistance / 200) : 0)
+                );
                 simulation.force("posX").strength(gs.CENTER_STRENGTH / 100);
                 simulation.force("posY").strength(gs.CENTER_STRENGTH / 100);
                 simulation.force("charge").strength(gs.CHARGE_STRENGTH);
