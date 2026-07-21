@@ -1,14 +1,7 @@
 import * as d3 from "d3";
 import * as userInput from "./user-input.ts"
 
-var width = window.innerWidth;
-var height = window.innerHeight;
-
-window.onresize = () => {
-    width = window.innerWidth;
-    height = window.innerHeight;
-}
-
+var width, height;
 
 // first functions are for communication with the plugin
 
@@ -63,6 +56,33 @@ function createGraph() {
     .node();
 
     const context = canvas.getContext('2d');
+
+    width = canvas.parentElement.clientWidth;
+    height = canvas.parentElement.clientHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    let resizePending = false;
+    const resizeObserver = new ResizeObserver(() => {
+        if (resizePending) return;
+        resizePending = true;
+        requestAnimationFrame(() => {
+            resizePending = false;
+            width = canvas.parentElement.clientWidth;
+            height = canvas.parentElement.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+            if (simulation && graphSettings) {
+                simulation
+                    .force("posX", d3.forceX(width / 2).strength(graphSettings.CENTER_STRENGTH / 100))
+                    .force("posY", d3.forceY(height / 2).strength(graphSettings.CENTER_STRENGTH / 100));
+            }
+            if (transform && graphNodes.length > 0) {
+                draw();
+            }
+        });
+    });
+    resizeObserver.observe(canvas.parentElement);
 
     let graphNodes = [];
     let graphNodesMap = new Map();
