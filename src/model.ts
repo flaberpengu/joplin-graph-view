@@ -43,11 +43,17 @@ export interface DataSpec {
     filterQuery?: string;
 }
 
+export interface NotebookColourEntry {
+  name: string;
+  colour: string;
+}
+
 export interface GraphData {
   nodes: Node[];
   edges: Edge[];
   spanningTree: Array<string>;
   graphSettings: GraphSettings | {};
+  notebookColours?: Record<string, NotebookColourEntry>;
 }
 
 export interface GraphSettings {

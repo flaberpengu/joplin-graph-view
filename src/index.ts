@@ -56,7 +56,7 @@ async function collectGraphSettings() {
     return await joplin.settings.values([
         'FILTER', 'MAX_TREE_DEPTH', 'QUERY', 'SHOW_TAGS', 'INCLUDE_BACKLINKS', 'GROUPS',
         'ALPHA', 'CENTER_STRENGTH', 'CHARGE_STRENGTH', 'COLLIDE_RADIUS', 'LINK_DISTANCE',
-        'MAX_TEXT_WIDTH', 'COLOUR_BY_NOTEBOOK'
+        'MAX_TEXT_WIDTH', 'COLOUR_BY_NOTEBOOK', 'NOTEBOOK_COLOURS'
     ]);
 }
 
@@ -181,6 +181,11 @@ async function processWebviewMessage(message: any) {
         case "open_tag":
             return await joplin.commands.execute("openTag", message.id);
         case "set_setting":
+            if (message.key === "NOTEBOOK_COLOURS") {
+                await joplin.settings.setValue(message.key, message.value);
+                updateUI("pushSettings");
+                return;
+            }
             if (message.key === "GROUPS") {
                 updateUI("colorsChange");
             } else if (USER_INPUT.includes(message.key)) {
@@ -305,11 +310,16 @@ async function updateUI(eventName: string) {
     }
 
     if (graphSettings.COLOUR_BY_NOTEBOOK) {
-        const notebookColours = await joplinData.buildNotebookColourMap(data.nodes);
+        const result = await joplinData.buildNotebookColourMap(data.nodes);
         for (let node of data.nodes) {
-            node.color = notebookColours.get(node.id) || '';
+            node.color = result.nodeColourMap.get(node.id) || '';
         }
+        data.notebookColours = result.notebookColours;
     } else {
+        data.notebookColours = undefined;
+    }
+
+    if (!graphSettings.COLOUR_BY_NOTEBOOK) {
         for (let node of data.nodes) {
             node.color = '';
             for (let [_, nodeMap] of nodeGroupMap.entries())

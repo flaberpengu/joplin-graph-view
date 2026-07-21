@@ -30,6 +30,10 @@ details[open] {
     transition: max-height 0.5s ease-out;
 }
 
+#groups[open] {
+    max-height: none;
+}
+
 details:hover {
     cursor: pointer;
 }

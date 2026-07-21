@@ -18,6 +18,9 @@ const includeBacklinksSwitch = document.getElementById("include-backlinks-switch
 const maxDistInput = document.getElementById("distance-slider") as HTMLInputElement;
 const temperatureInput = document.getElementById("temperature-slider") as HTMLInputElement;
 const colourByNotebookSwitch = document.getElementById("colour-by-notebook-switch") as HTMLInputElement;
+const notebookColoursContainer = document.getElementById("notebook-colours-container") as HTMLDivElement;
+
+let _setSetting: any;
 
 const scale = [
     "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c",
@@ -116,6 +119,36 @@ function makeGroupValues() {
     return groupValues
 }
 
+export function updateNotebookColours(data: any) {
+    if (!data || !data.notebookColours) return;
+
+    notebookColoursContainer.innerHTML = '';
+    const entries = Object.entries(data.notebookColours);
+    if (!entries.length) return;
+
+    for (const [id, entry] of entries as [string, { name: string; colour: string }][]) {
+        const row = document.createElement('div');
+        row.className = 'control-block';
+        row.style.cssText = 'gap:10px;margin:4px 0;display:flex;flex-direction:row;justify-content:space-between;align-items:center;';
+        row.innerHTML = `
+            <label class="label" style="flex-basis:fit-content;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;">${entry.name}</label>
+            <input class="notebook-colour-input" type="color" value="${entry.colour}" data-notebook-id="${id}" style="min-width:30px;flex-basis:10%;flex-grow:1;border-bottom:none;">
+        `;
+        notebookColoursContainer.appendChild(row);
+    }
+
+    document.querySelectorAll('.notebook-colour-input').forEach((input) => {
+        input.addEventListener('change', () => {
+            const values: Record<string, string> = {};
+            document.querySelectorAll('.notebook-colour-input').forEach((inp) => {
+                const el = inp as HTMLInputElement;
+                values[el.dataset.notebookId!] = el.value;
+            });
+            _setSetting("NOTEBOOK_COLOURS", values);
+        });
+    });
+}
+
 export function addGroupEventListeners(setSetting) {
     const oldInputs = document.querySelectorAll(".group-input");
     const oldColors = document.querySelectorAll(".group-color");
@@ -177,8 +210,12 @@ export function addGroupEventListeners(setSetting) {
 
 export function initFront(initialValues, setSetting) {
 
+    _setSetting = setSetting;
     chromeRangeInputFix();
     setupGraphHandle(initialValues);
+    if (initialValues.COLOUR_BY_NOTEBOOK) {
+        notebookColoursContainer.style.display = 'block';
+    }
 
     const groupNames = Object.keys(initialValues.GROUPS)
 
@@ -274,6 +311,7 @@ export function initFront(initialValues, setSetting) {
     });
 
     colourByNotebookSwitch.addEventListener("change", () => {
+        notebookColoursContainer.style.display = colourByNotebookSwitch.checked ? 'block' : 'none';
         setSetting("COLOUR_BY_NOTEBOOK", colourByNotebookSwitch.checked);
     });
 

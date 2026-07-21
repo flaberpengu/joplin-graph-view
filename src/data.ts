@@ -290,12 +290,15 @@ export async function buildNodeGroupMap(groups: Map<string, ColorGroup>): Promis
     return nodeGroupMap
 }
 
-const NOTEBOOK_COLOURS = [
+const NOTEBOOK_COLOUR_PALETTE = [
     "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c",
     "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"
 ];
 
-export async function buildNotebookColourMap(nodes: Node[]): Promise<Map<string, string>> {
+export async function buildNotebookColourMap(nodes: Node[]): Promise<{
+    nodeColourMap: Map<string, string>;
+    notebookColours: Record<string, { name: string; colour: string }>;
+}> {
     const notebookIds = new Set<string>();
     for (const node of nodes) {
         if (!node.is_tag && node.parent_id) {
@@ -310,18 +313,31 @@ export async function buildNotebookColourMap(nodes: Node[]): Promise<Map<string,
     );
     const folders = (await Promise.all(folderPromises)).filter(Boolean) as { id: string; title: string }[];
 
-    const notebookColourMap = new Map<string, string>();
-    folders.forEach((folder, i) => {
-        notebookColourMap.set(folder.id, NOTEBOOK_COLOURS[i % NOTEBOOK_COLOURS.length]);
-    });
+    const storedColours: Record<string, string> = await joplin.settings.value("NOTEBOOK_COLOURS") || {};
+
+    const notebookColours: Record<string, { name: string; colour: string }> = {};
+    let colourIndex = 0;
+    for (const folder of folders) {
+        if (storedColours[folder.id]) {
+            notebookColours[folder.id] = { name: folder.title, colour: storedColours[folder.id] };
+        } else {
+            const colour = NOTEBOOK_COLOUR_PALETTE[colourIndex % NOTEBOOK_COLOUR_PALETTE.length];
+            notebookColours[folder.id] = { name: folder.title, colour };
+            storedColours[folder.id] = colour;
+            colourIndex++;
+        }
+    }
+
+    await joplin.settings.setValue("NOTEBOOK_COLOURS", storedColours);
 
     const nodeColourMap = new Map<string, string>();
     for (const node of nodes) {
-        if (node.parent_id && notebookColourMap.has(node.parent_id)) {
-            nodeColourMap.set(node.id, notebookColourMap.get(node.parent_id));
+        if (node.parent_id && notebookColours[node.parent_id]) {
+            nodeColourMap.set(node.id, notebookColours[node.parent_id].colour);
         }
     }
-    return nodeColourMap;
+
+    return { nodeColourMap, notebookColours };
 }
 
 export async function executeSearch(query: string): Promise<Array<JoplinNote>> {

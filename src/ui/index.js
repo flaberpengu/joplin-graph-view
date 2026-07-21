@@ -14,13 +14,21 @@ window.onresize = () => {
 
 async function poll(msg) {
     const resp = await webviewApi.postMessage({ name: "poll", msg: msg })
-    if (resp.name === "initialGraph") graph.init(resp.data);
-    if (resp.name === "pushSettings") graph.updateSettings(resp.data);
+    if (resp.name === "initialGraph") {
+        graph.init(resp.data);
+        userInput.updateNotebookColours(resp.data);
+    }
+    if (resp.name === "pushSettings") {
+        graph.updateSettings(resp.data);
+        userInput.updateNotebookColours(resp.data);
+    }
     if (resp.name === "noteChange:title") graph.updateNodeLabel(resp.resp); 
     if (resp.name === "noteChange:links" 
         || resp.name === "noteSelectionChange"
-        || resp.name === "colorsChange")
+        || resp.name === "colorsChange") {
         graph.updateGraph(resp.data);
+        userInput.updateNotebookColours(resp.data);
+    }
     poll();
 }
 
@@ -428,6 +436,17 @@ function createGraph() {
         updateSettings(data) {
             graphSettings = Object.assign(graphSettings, data.graphSettings);
             userInput.setupGraphHandle(graphSettings);
+
+            if (data.nodes) {
+                for (const newNode of data.nodes) {
+                    const existing = graphNodesMap.get(newNode.id);
+                    if (existing) {
+                        existing.color = newNode.color;
+                        existing.faded = newNode.faded;
+                        existing.focused = newNode.focused;
+                    }
+                }
+            }
 
             simulation.force("link").distance(graphSettings.LINK_DISTANCE);
             simulation.force("posX").strength(graphSettings.CENTER_STRENGTH / 100);

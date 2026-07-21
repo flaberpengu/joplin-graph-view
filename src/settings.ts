@@ -111,6 +111,15 @@ export async function registerSettings() {
       description:
         "The desired distance between nodes.",
     },
+    NOTEBOOK_COLOURS: {
+      value: {},
+      type: SettingItemType.Object,
+      section: sectionName,
+      public: false,
+      label: "Notebook colours",
+      description:
+        "Maps notebook IDs to their assigned colour hex values.",
+    },
     MAX_TEXT_WIDTH: {
       advanced: true,
       value: 180,
