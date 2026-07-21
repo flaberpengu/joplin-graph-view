@@ -98,7 +98,7 @@ function createGraph() {
     d3.select('#center-graph-btn').on('click', centerGraph);
 
     function dragstarted(event) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
+        if (!event.active) simulation.alphaTarget(0.1).restart();
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
     };
@@ -109,10 +109,19 @@ function createGraph() {
         event.subject.fy = transform.invertY(py);
     };
 
+    function saveNodePositions() {
+        const positions = {};
+        for (const node of graphNodes) {
+            positions[node.id] = { x: node.x, y: node.y };
+        }
+        setSetting("NODE_POSITIONS", positions);
+    }
+
     function dragended(event) {
         if (!event.active) simulation.alphaTarget(0);
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
+        saveNodePositions();
     };
 
     function drawNode(node) {
@@ -406,6 +415,15 @@ function createGraph() {
 
             for (let node of graphNodes) graphNodesMap.set(node.id, node);
 
+            const savedPositions = graphSettings.NODE_POSITIONS || {};
+            for (const node of graphNodes) {
+                const saved = savedPositions[node.id];
+                if (saved) {
+                    node.x = saved.x;
+                    node.y = saved.y;
+                }
+            }
+
             transform = d3.zoomIdentity;
             simulation = initSimulation();
 
@@ -454,6 +472,7 @@ function createGraph() {
         },
 
         updateSettings(data) {
+            const oldGraphSettings = Object.assign({}, graphSettings);
             graphSettings = Object.assign(graphSettings, data.graphSettings);
             userInput.setupGraphHandle(graphSettings);
 
@@ -468,14 +487,23 @@ function createGraph() {
                 }
             }
 
-            simulation.force("link").distance(graphSettings.LINK_DISTANCE);
-            simulation.force("posX").strength(graphSettings.CENTER_STRENGTH / 100);
-            simulation.force("posY").strength(graphSettings.CENTER_STRENGTH / 100);
-            simulation.force("charge").strength(graphSettings.CHARGE_STRENGTH);
-            simulation.force("nocollide").radius(graphSettings.COLLIDE_RADIUS);
+            const gs = graphSettings;
+            const forceChanged =
+                oldGraphSettings.LINK_DISTANCE !== gs.LINK_DISTANCE ||
+                oldGraphSettings.CENTER_STRENGTH !== gs.CENTER_STRENGTH ||
+                oldGraphSettings.CHARGE_STRENGTH !== gs.CHARGE_STRENGTH ||
+                oldGraphSettings.COLLIDE_RADIUS !== gs.COLLIDE_RADIUS ||
+                oldGraphSettings.ALPHA !== gs.ALPHA;
 
-            simulation.alpha(graphSettings.ALPHA / 100);
-            simulation.restart();
+            if (forceChanged) {
+                simulation.force("link").distance(gs.LINK_DISTANCE);
+                simulation.force("posX").strength(gs.CENTER_STRENGTH / 100);
+                simulation.force("posY").strength(gs.CENTER_STRENGTH / 100);
+                simulation.force("charge").strength(gs.CHARGE_STRENGTH);
+                simulation.force("nocollide").radius(gs.COLLIDE_RADIUS);
+                simulation.alpha(gs.ALPHA / 100);
+                simulation.restart();
+            }
         },
     });
 }

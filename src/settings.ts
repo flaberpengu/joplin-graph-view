@@ -120,6 +120,15 @@ export async function registerSettings() {
       description:
         "Maps notebook IDs to their assigned colour hex values.",
     },
+    NODE_POSITIONS: {
+      value: {},
+      type: SettingItemType.Object,
+      section: sectionName,
+      public: false,
+      label: "Saved node positions",
+      description:
+        "Persists node positions across graph sessions.",
+    },
     MAX_TEXT_WIDTH: {
       advanced: true,
       value: 180,

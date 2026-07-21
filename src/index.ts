@@ -56,7 +56,7 @@ async function collectGraphSettings() {
     return await joplin.settings.values([
         'FILTER', 'MAX_TREE_DEPTH', 'QUERY', 'SHOW_TAGS', 'INCLUDE_BACKLINKS', 'GROUPS',
         'ALPHA', 'CENTER_STRENGTH', 'CHARGE_STRENGTH', 'COLLIDE_RADIUS', 'LINK_DISTANCE',
-        'MAX_TEXT_WIDTH', 'COLOUR_BY_NOTEBOOK', 'NOTEBOOK_COLOURS'
+        'MAX_TEXT_WIDTH', 'COLOUR_BY_NOTEBOOK', 'NOTEBOOK_COLOURS', 'NODE_POSITIONS'
     ]);
 }
 
@@ -181,6 +181,10 @@ async function processWebviewMessage(message: any) {
         case "open_tag":
             return await joplin.commands.execute("openTag", message.id);
         case "set_setting":
+            if (message.key === "NODE_POSITIONS") {
+                await joplin.settings.setValue(message.key, message.value);
+                return;
+            }
             if (message.key === "NOTEBOOK_COLOURS") {
                 await joplin.settings.setValue(message.key, message.value);
                 updateUI("pushSettings");
