@@ -29,10 +29,10 @@ are included. There is a feature pending for a toggle "Backlinks on/off".
     notes that satisfy the condition in the "Filter" input field are EXCLUDED from the graph.
 - Toggle tag nodes on and off in the UI.
 - Flexible forces tweaks for each force in the graph UI in "Graph parameters" block.
-- Add colored groups to your graph in "Groups" block.
+- Add coloured groups to your graph in "Groups" block.
     - For each group type your condition in the last input field and press `Enter`
     or click the `+` button.
-    - Colors are assigned automatically but can be adjusted.
+    - Colours are assigned automatically but can be adjusted.
     - You can adjust your filters dynamically afterwards, don't forget to press `Enter`,
     otherwise the filter would not be updated.
 - Colour nodes by their parent notebook.
@@ -45,7 +45,7 @@ https://github.com/user-attachments/assets/3b9d0786-83f7-4f9e-8c5d-2eb87b6f532f
 
 # Bugs
 
-- When adding new note if that note falls into one of the colored groups defined by user it is not colored until the graph is restarted or filter query is updated.
+- When adding new note if that note falls into one of the coloured groups defined by user it is not coloured until the graph is restarted or filter query is updated.
 - When you switch quickly between notes in the same tree sometimes graph does not update. Toggle graph off and on to rebuild
 
 # Plans
