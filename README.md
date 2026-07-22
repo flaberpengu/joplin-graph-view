@@ -1,17 +1,14 @@
-# Sepremento's Awesome Graph
+# Flaberpengu's Awesome Graph
 
-This plugin provides a graph for the connections between notes in your Joplin
-databse. The graph is interactive and configurable. See [Features](#features) below.
+This plugin provides a graph view of your Joplin notes, with arrows denoting connections between notes. See [Features](#features) below.
 
-It was initially a fork of [@treymo](https://github.com/treymo) [Link Graph UI](https://github.com/treymo/joplin-link-graph)
-plugin but quickly have developed into a creature of its own. Some pieces of code
-remained untouched so as the structure of the app.
+This is a fork of [@sepremento](https://github.com/sepremento)'s [Sepremento's Awesome Graph](https://github.com/sepremento/joplin-graph-view) plugin with some tweaks applied for my personal taste. The broad structure of the app and the bulk of the code is untouched. I have also inherited many of the listed [bugs](#bugs).
 
-This plugin was developed for my personal use and my taste. It works best with
-Dark theme. Also I am a recreational developer in TypeScript and Web so no 
-rigorous testing was introduced. However pugin does a very decent job for me.
+In general, I prefer an Obsidian-style to my graph with respect to node movement and feel, which I am trying to emulate here. I have also added miscellaneous quality of life improvements. For planned features/changes, see [plans](#plans).
 
-There are some known [bugs](#bugs) that I hope to fix in future.
+## AI Usage
+
+I have no background in Javascript or Typescript, and have no real interest in learning either of these at this time. I do, however, have extensive background in programming in other languages. Thus, this plugin serves as my first exploration into using [Opencode](https://opencode.ai/) and coding agents - it is highly likely that any changes in this repository were not written by me. Therefore, I expect bugs and poor performance, at least for now.
 
 # Features
 
@@ -20,6 +17,8 @@ are included. There is a feature pending for a toggle "Backlinks on/off".
 - Vary depth of your linked tree rooted in the current note.
     - Click on the `Max. distance` slider to set tree depth between `0` and
     `5`. Zero is like "Global view" in Obsidian, all notes are displayed.
+- Adjustable centre strength, charge strength, and link distance between nodes.
+    - Set all of these to `0` for completely free placement of nodes (like in Obsidian).
 - Select multiple notes to draw in the Graph UI.
 - Open note or tag associated with node under curset with `CTRL-LeftClick`.
 - Build a graph according to some query independent of selected notes.
@@ -36,6 +35,9 @@ are included. There is a feature pending for a toggle "Backlinks on/off".
     - Colors are assigned automatically but can be adjusted.
     - You can adjust your filters dynamically afterwards, don't forget to press `Enter`,
     otherwise the filter would not be updated.
+- Colour nodes by their parent notebook.
+    - Toggleable on or off.
+    - Default colours with per-notebook colour picker, should you wish to change the colours.
 
 **Note:** Requires Joplin 1.7.0+
 
@@ -46,6 +48,13 @@ https://github.com/user-attachments/assets/3b9d0786-83f7-4f9e-8c5d-2eb87b6f532f
 - When adding new note if that note falls into one of the colored groups defined by user it is not colored until the graph is restarted or filter query is updated.
 - When you switch quickly between notes in the same tree sometimes graph does not update. Toggle graph off and on to rebuild
 
+# Plans
+
+- Option for opening the graph view in a window.
+- Option to toggle notebooks off when in "Global" view.
+- Make focus smoother when hovering/selecting nodes.
+- Improve performance + reduce CPU usage.
+
 # Development
 
 1. Check out the Git repository
@@ -54,5 +63,9 @@ https://github.com/user-attachments/assets/3b9d0786-83f7-4f9e-8c5d-2eb87b6f532f
 1. Launch [Joplin in dev
    mode](https://joplinapp.org/api/references/development_mode/) and load the
    plugin.
+
+# License
+
+In the spirit of Sepremento's plugin, this library is licensed under the MIT license. See [LICENSE](LICENSE) for more info.
 
 keywords: joplin-plugin
